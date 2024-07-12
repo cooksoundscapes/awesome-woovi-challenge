@@ -1,5 +1,8 @@
-import { Button, FormControl, Stack, TextField } from "@mui/material";
+import { Button, FormControl, MenuItem, Stack, TextField } from "@mui/material";
 import { PageTitle } from "../../components";
+import toCurrency from "../../utils/currency";
+import usePaymentData from '../../context/consumer'
+import { useMemo } from "react";
 
 interface FormProps {
     username: string;
@@ -7,6 +10,13 @@ interface FormProps {
 }
 
 export default function UserForm({ username, times }: FormProps) {
+    const { paymentMethods } = usePaymentData()
+
+    const ccOptions = useMemo(
+        () => paymentMethods.find(p => p.id === 2)?.installments,
+        [paymentMethods]
+    )
+
     return (
         <>
         <PageTitle>{`${username}, pague o restante em ${times}x no cartão`}</PageTitle>
@@ -19,7 +29,13 @@ export default function UserForm({ username, times }: FormProps) {
                     <TextField id="expiration" label="Vencimento" variant="outlined" />
                     <TextField id="cvv" label="CVV" variant="outlined" />
                 </Stack>
-                <TextField id="installments" label="Parcelas" variant="outlined" />
+                <TextField select id="installments" label="Parcelas" variant="outlined">
+                    {ccOptions ? ccOptions.map(opt => (
+                        <MenuItem key={opt.id} value={opt.id}>
+                            {`${opt.times}x de ${toCurrency(opt.cost)}`}
+                        </MenuItem>
+                    )) : null}
+                </TextField>
                 <Button variant="contained" color="secondary">Pagar</Button>
             </Stack>
         </FormControl>
